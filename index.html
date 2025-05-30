@@ -1,189 +1,175 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BrainBank - Juego Financiero</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainBank</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f4f8;
+      background-color: #e6e8eb;
+      color: #000;
       margin: 0;
       padding: 20px;
-      color: #333;
     }
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-    h1, h2 {
+    header {
+      background-color: #0a1a2f;
+      color: #fff;
+      padding: 20px;
       text-align: center;
-      color: #2a9d8f;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    .game-container {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 30px;
     }
     .question {
-      margin: 20px 0;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
     }
     .options button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 10px;
+      background-color: #0a1a2f;
+      color: #fff;
       border: none;
-      border-radius: 10px;
-      background-color: #e0e0e0;
-      font-size: 16px;
+      padding: 12px 20px;
+      margin: 10px 5px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: 0.3s;
+      font-size: 1rem;
     }
     .options button:hover {
-      background-color: #a8dadc;
+      background-color: #1d3557;
     }
-    .correct {
-      background-color: #8ecae6 !important;
-    }
-    .incorrect {
-      background-color: #f28482 !important;
-    }
-    #nextBtn, #nivelBtn {
+    .status {
       margin-top: 20px;
+      font-size: 1.2rem;
+    }
+    .nivel-selector {
+      margin: 20px auto;
+      text-align: center;
+    }
+    .nivel-selector button {
+      margin: 5px;
       padding: 10px 20px;
-      background-color: #2a9d8f;
+      background-color: #666;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      display: inline-block;
+      border-radius: 6px;
     }
-    #nivelBtn {
-      float: right;
+    .nivel-selector button:hover {
+      background-color: #333;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>BrainBank</h1>
-    <h2 id="nivel"></h2>
-    <button id="nivelBtn" onclick="cambiarNivel()">Cambiar Nivel</button>
-    <div class="question" id="question"></div>
-    <div class="options" id="options"></div>
-    <div class="question" id="resultado"></div>
-    <button id="nextBtn" onclick="siguientePregunta()">Siguiente</button>
+  <header>BrainBank - Juego Financiero</header>
+  <div class="nivel-selector">
+    <button onclick="cambiarNivel(1)">Nivel 1</button>
+    <button onclick="cambiarNivel(2)">Nivel 2</button>
+    <button onclick="cambiarNivel(3)">Nivel 3</button>
+  </div>
+  <div class="game-container">
+    <div class="question" id="pregunta"></div>
+    <div class="options" id="opciones"></div>
+    <div class="status" id="estado"></div>
   </div>
 
-  <audio id="soundCorrect" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
-  <audio id="soundIncorrect" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+  <audio id="sonidoCorrecto" src="https://cdn.pixabay.com/audio/2022/03/15/audio_c0d1f97ef2.mp3"></audio>
+  <audio id="sonidoIncorrecto" src="https://cdn.pixabay.com/audio/2022/03/15/audio_848af67186.mp3"></audio>
 
   <script>
-    const niveles = [
-      {
-        nombre: "Nivel 1 - Básico",
-        preguntas: [
-          { texto: "Te dan $10 para el recreo...", opciones: [{ texto: "a) Lo compras todo de una vez.", correcta: false }, { texto: "b) Compras algo más barato y ahorras.", correcta: true }, { texto: "c) Le pides a un amigo que te preste más.", correcta: false }] },
-          { texto: "Quieres una nueva funda...", opciones: [{ texto: "a) Comprar otra porque están de moda.", correcta: false }, { texto: "b) Pensar si realmente la necesitas.", correcta: true }, { texto: "c) Pedirla y luego ver cómo pagas.", correcta: false }] },
-          { texto: "Te das cuenta que gastaste...", opciones: [{ texto: "a) Que deberías evitar salir.", correcta: false }, { texto: "b) Que es mejor registrar tus gastos.", correcta: true }, { texto: "c) Que está bien si es poco dinero.", correcta: false }] },
-          { texto: "Tienes $20 y quieres ahorrar...", opciones: [{ texto: "a) Gasto y ahorro lo que me sobre.", correcta: false }, { texto: "b) Separo los $5 y gasto lo demás.", correcta: true }, { texto: "c) No importa, siempre habrá más plata.", correcta: false }] },
-          { texto: "Tu familia te da una mesada...", opciones: [{ texto: "a) Gastarla rápido antes de perderla.", correcta: false }, { texto: "b) Pedir más si no alcanza.", correcta: false }, { texto: "c) Hacer un presupuesto sencillo.", correcta: true }] },
-          { texto: "¿Cuál es una buena razón para ahorrar?", opciones: [{ texto: "a) Para gastar más luego.", correcta: false }, { texto: "b) Para tener dinero en emergencias.", correcta: true }, { texto: "c) Porque los demás lo hacen.", correcta: false }] },
-          { texto: "Ves un anuncio llamativo de una oferta...", opciones: [{ texto: "a) Compras sin pensarlo.", correcta: false }, { texto: "b) Evalúas si lo necesitas.", correcta: true }, { texto: "c) Pides más dinero a tus padres.", correcta: false }] },
-          { texto: "Tus amigos salen todos los días...", opciones: [{ texto: "a) Les dices que no puedes gastar tanto.", correcta: true }, { texto: "b) Usas tu tarjeta sin ver saldo.", correcta: false }, { texto: "c) Le pides dinero a tu hermano.", correcta: false }] },
-          { texto: "¿Cuál es un gasto fijo?", opciones: [{ texto: "a) Una hamburguesa.", correcta: false }, { texto: "b) Mensualidad del celular.", correcta: true }, { texto: "c) Dulces.", correcta: false }] },
-          { texto: "¿Qué puedes hacer con tu cambio?", opciones: [{ texto: "a) Gastarlo en lo que sea.", correcta: false }, { texto: "b) Guardarlo en una alcancía.", correcta: true }, { texto: "c) Dárselo a otro.", correcta: false }] },
-        ]
-      },
-      {
-        nombre: "Nivel 2 - Intermedio",
-        preguntas: [
-          { texto: "¿Qué es un presupuesto?", opciones: [{ texto: "a) Una lista de deseos.", correcta: false }, { texto: "b) Un plan para gastar tu dinero.", correcta: true }, { texto: "c) Un préstamo bancario.", correcta: false }] },
-          { texto: "Tienes un ingreso mensual de $30. ¿Qué es mejor?", opciones: [{ texto: "a) Gastar primero, luego ahorrar.", correcta: false }, { texto: "b) Ahorrar primero, luego gastar.", correcta: true }, { texto: "c) No necesitas ahorrar.", correcta: false }] },
-          { texto: "¿Qué es una meta financiera?", opciones: [{ texto: "a) Comprar impulsivamente.", correcta: false }, { texto: "b) Ahorrar para algo específico.", correcta: true }, { texto: "c) Hacer muchas deudas.", correcta: false }] },
-          { texto: "¿Qué representa una tarjeta de crédito?", opciones: [{ texto: "a) Dinero prestado.", correcta: true }, { texto: "b) Dinero regalado.", correcta: false }, { texto: "c) Premios bancarios.", correcta: false }] },
-          { texto: "¿Cuál es una forma inteligente de ahorrar?", opciones: [{ texto: "a) Ahorrar cuando sobra.", correcta: false }, { texto: "b) Hacerlo parte de tu presupuesto.", correcta: true }, { texto: "c) No es necesario ahorrar.", correcta: false }] },
-          { texto: "¿Qué es un gasto variable?", opciones: [{ texto: "a) El alquiler.", correcta: false }, { texto: "b) Salidas con amigos.", correcta: true }, { texto: "c) Pago de Netflix mensual.", correcta: false }] },
-          { texto: "¿Qué es el interés?", opciones: [{ texto: "a) El amor al dinero.", correcta: false }, { texto: "b) El dinero extra que ganas o pagas.", correcta: true }, { texto: "c) El precio original de algo.", correcta: false }] },
-          { texto: "¿Qué debes hacer antes de comprar algo grande?", opciones: [{ texto: "a) Gastar sin pensar.", correcta: false }, { texto: "b) Comparar precios.", correcta: true }, { texto: "c) Usar todo tu presupuesto.", correcta: false }] },
-          { texto: "¿Qué representa una deuda?", opciones: [{ texto: "a) Un gasto fijo.", correcta: false }, { texto: "b) Dinero que debes pagar.", correcta: true }, { texto: "c) Un premio financiero.", correcta: false }] },
-          { texto: "¿Qué puedes usar para llevar el control de tu dinero?", opciones: [{ texto: "a) Una hoja de cálculo.", correcta: true }, { texto: "b) La memoria.", correcta: false }, { texto: "c) Ningún método.", correcta: false }] },
-        ]
-      },
-      {
-        nombre: "Nivel 3 - Avanzado",
-        preguntas: [
-          { texto: "¿Qué es el ahorro a largo plazo?", opciones: [{ texto: "a) Ahorrar para el cine.", correcta: false }, { texto: "b) Ahorrar para la universidad.", correcta: true }, { texto: "c) Guardar el vuelto.", correcta: false }] },
-          { texto: "¿Qué es un fondo de emergencia?", opciones: [{ texto: "a) Dinero para gastar rápido.", correcta: false }, { texto: "b) Dinero guardado para imprevistos.", correcta: true }, { texto: "c) Un regalo del gobierno.", correcta: false }] },
-          { texto: "¿Por qué es importante el historial crediticio?", opciones: [{ texto: "a) Para comprar más cosas.", correcta: false }, { texto: "b) Para que te aprueben créditos.", correcta: true }, { texto: "c) Para evitar el ahorro.", correcta: false }] },
-          { texto: "¿Qué es invertir?", opciones: [{ texto: "a) Gastar en comida.", correcta: false }, { texto: "b) Poner dinero para obtener ganancias.", correcta: true }, { texto: "c) Prestar sin intereses.", correcta: false }] },
-          { texto: "¿Qué es el seguro de vida?", opciones: [{ texto: "a) Dinero para comprar comida.", correcta: false }, { texto: "b) Protección económica en caso de fallecer.", correcta: true }, { texto: "c) Préstamo del banco.", correcta: false }] },
-          { texto: "¿Qué son los impuestos?", opciones: [{ texto: "a) Dinero que ganas.", correcta: false }, { texto: "b) Dinero que pagas al gobierno.", correcta: true }, { texto: "c) Premios financieros.", correcta: false }] },
-          { texto: "¿Qué es el interés compuesto?", opciones: [{ texto: "a) Un interés aburrido.", correcta: false }, { texto: "b) Interés sobre el interés acumulado.", correcta: true }, { texto: "c) Deuda sin fin.", correcta: false }] },
-          { texto: "¿Por qué deberías diversificar inversiones?", opciones: [{ texto: "a) Para enfocarte en una sola.", correcta: false }, { texto: "b) Para reducir riesgos.", correcta: true }, { texto: "c) Porque es más divertido.", correcta: false }] },
-          { texto: "¿Qué es una tarjeta de débito?", opciones: [{ texto: "a) Una tarjeta de regalo.", correcta: false }, { texto: "b) Acceso a tu propio dinero.", correcta: true }, { texto: "c) Crédito del banco.", correcta: false }] },
-          { texto: "¿Qué puedes hacer si te endeudas demasiado?", opciones: [{ texto: "a) Ignorar la deuda.", correcta: false }, { texto: "b) Hacer un plan para pagarla.", correcta: true }, { texto: "c) Huir del banco.", correcta: false }] },
-        ]
-      }
-    ];
+    let nivelActual = 1;
+    let indicePregunta = 0;
+    let presupuesto = 100;
+    let energia = 100;
 
-    let nivelActual = 0;
-    let preguntaActual = 0;
+    const niveles = {
+      1: [
+        { pregunta: "¿Qué es un presupuesto?", opciones: ["Un gasto extra", "Un plan para controlar ingresos y gastos", "Una cuenta bancaria"], correcta: 1 },
+        { pregunta: "¿Cuál es una buena forma de ahorrar?", opciones: ["Ahorrar lo que sobre al final del mes", "Gastar todo y pedir prestado", "Separar un porcentaje apenas recibes dinero"], correcta: 2 },
+        { pregunta: "¿Qué es una necesidad básica?", opciones: ["Un lujo", "Algo que necesitas para vivir", "Una suscripción de entretenimiento"], correcta: 1 },
+        { pregunta: "¿Qué es un ingreso?", opciones: ["Dinero que gastas", "Dinero que recibes", "Dinero que prestas"], correcta: 1 },
+        { pregunta: "¿Qué es un gasto fijo?", opciones: ["Un gasto que cambia cada mes", "Un gasto innecesario", "Un gasto mensual constante como el alquiler"], correcta: 2 },
+        { pregunta: "¿Qué es un gasto variable?", opciones: ["Un gasto igual cada mes", "Un gasto que varía como el supermercado", "Un ahorro"], correcta: 1 },
+        { pregunta: "¿Qué significa ‘vivir dentro de tus posibilidades’?", opciones: ["Gastar más de lo que ganas", "Gastar menos o igual a lo que ganas", "Pedir préstamos para cubrir gastos"], correcta: 1 },
+        { pregunta: "¿Por qué es importante ahorrar desde joven?", opciones: ["No es importante", "Porque tendrás más estabilidad en el futuro", "Porque así puedes pedir más préstamos"], correcta: 1 },
+        { pregunta: "¿Qué es el ahorro a corto plazo?", opciones: ["Ahorrar para emergencias", "Ahorrar para compras pequeñas como ropa o gadgets", "Ahorrar para la jubilación"], correcta: 1 },
+        { pregunta: "¿Qué pasa si gastas más de lo que ganas?", opciones: ["Ahorras más", "Tienes que endeudarte", "Te pagan más"], correcta: 1 }
+      ],
+      2: [
+        { pregunta: "¿Qué es una tasa de interés?", opciones: ["Un impuesto", "Un porcentaje que se cobra por un préstamo", "Un tipo de ahorro"], correcta: 1 },
+        { pregunta: "¿Qué es una cuenta de ahorros?", opciones: ["Una cuenta para gastar dinero", "Una cuenta para guardar dinero y ganar intereses", "Una tarjeta de crédito"], correcta: 1 },
+        { pregunta: "¿Cuál es la diferencia entre débito y crédito?", opciones: ["Ninguna", "El débito usa tu dinero, el crédito es prestado", "Crédito es gratis"], correcta: 1 },
+        { pregunta: "¿Qué es un estado de cuenta?", opciones: ["Un resumen de tus ingresos y gastos en el banco", "Un documento escolar", "Un recibo de supermercado"], correcta: 0 },
+        { pregunta: "¿Qué es un fondo de emergencia?", opciones: ["Un préstamo del banco", "Dinero ahorrado para imprevistos", "Un seguro de auto"], correcta: 1 },
+        { pregunta: "¿Qué significa tener una deuda responsable?", opciones: ["No pagar las deudas", "Pedir dinero constantemente", "Pagar a tiempo lo que se debe"], correcta: 2 },
+        { pregunta: "¿Por qué es importante comparar precios?", opciones: ["Para gastar más", "Para elegir lo más caro", "Para ahorrar eligiendo la mejor opción"], correcta: 2 },
+        { pregunta: "¿Qué es una meta financiera?", opciones: ["Un gasto innecesario", "Un objetivo económico como ahorrar para algo", "Una cuenta bancaria"], correcta: 1 },
+        { pregunta: "¿Qué es un préstamo?", opciones: ["Dinero que regalas", "Dinero que el banco te da para devolver luego", "Una cuenta de ahorros"], correcta: 1 },
+        { pregunta: "¿Qué es una tarjeta de crédito?", opciones: ["Dinero que ya tienes", "Un plástico decorativo", "Un medio para pagar ahora y devolver después"], correcta: 2 }
+      ],
+      3: [
+        { pregunta: "¿Qué es el interés compuesto?", opciones: ["Interés que se cobra una vez", "Interés que se calcula sobre el capital y los intereses previos", "Un impuesto"], correcta: 1 },
+        { pregunta: "¿Qué es una inversión?", opciones: ["Gastar sin retorno", "Poner dinero esperando una ganancia futura", "Pedir prestado"], correcta: 1 },
+        { pregunta: "¿Qué es un seguro de vida?", opciones: ["Un seguro para el celular", "Una protección económica para tus seres queridos si mueres", "Un seguro de auto"], correcta: 1 },
+        { pregunta: "¿Qué es un presupuesto mensual avanzado?", opciones: ["Una simple lista de gastos", "Un plan detallado que incluye metas, ingresos y ajustes", "Un préstamo"], correcta: 1 },
+        { pregunta: "¿Qué es el historial crediticio?", opciones: ["Un documento escolar", "El registro de cómo pagas tus deudas", "Un recibo del súper"], correcta: 1 },
+        { pregunta: "¿Qué es un emprendimiento?", opciones: ["Un trabajo normal", "Un proyecto propio para ganar dinero", "Un juego"], correcta: 1 },
+        { pregunta: "¿Qué es un ingreso pasivo?", opciones: ["Dinero que ganas sin trabajar activamente", "Tu salario mensual", "Una deuda"], correcta: 0 },
+        { pregunta: "¿Qué es el ahorro para la jubilación?", opciones: ["Un gasto común", "Ahorro pensado para cuando ya no trabajes", "Un seguro obligatorio"], correcta: 1 },
+        { pregunta: "¿Qué es diversificar tus ingresos?", opciones: ["Tener solo un trabajo", "Tener varias fuentes de ingreso", "Gastar en diferentes cosas"], correcta: 1 },
+        { pregunta: "¿Qué pasa si no pagas tus deudas a tiempo?", opciones: ["Mejoras tu historial", "Nada", "Aumenta tu deuda y afecta tu historial crediticio"], correcta: 2 }
+      ]
+    };
 
     function mostrarPregunta() {
-      const nivel = niveles[nivelActual];
-      document.getElementById('nivel').textContent = nivel.nombre;
-      const q = nivel.preguntas[preguntaActual];
-      document.getElementById('question').textContent = q.texto;
-      document.getElementById('resultado').textContent = "";
-      const opcionesDiv = document.getElementById('options');
+      const preguntas = niveles[nivelActual];
+      const actual = preguntas[indicePregunta];
+      document.getElementById("pregunta").innerText = actual.pregunta;
+      const opcionesDiv = document.getElementById("opciones");
       opcionesDiv.innerHTML = "";
-      document.getElementById('nextBtn').style.display = "none";
-
-      q.opciones.forEach(op => {
-        const btn = document.createElement('button');
-        btn.textContent = op.texto;
-        btn.onclick = () => responder(op.correcta, btn);
+      actual.opciones.forEach((opcion, i) => {
+        const btn = document.createElement("button");
+        btn.innerText = opcion;
+        btn.onclick = () => validarRespuesta(i);
         opcionesDiv.appendChild(btn);
       });
+      actualizarEstado();
     }
 
-    function responder(correcta, boton) {
-      const soundCorrect = document.getElementById('soundCorrect');
-      const soundIncorrect = document.getElementById('soundIncorrect');
-      const resultado = document.getElementById('resultado');
-
-      const botones = document.querySelectorAll(".options button");
-      botones.forEach(btn => btn.disabled = true);
-
-      if (correcta) {
-        boton.classList.add('correct');
-        resultado.textContent = "✅ ¡Correcto! Tu presupuesto aumentó.";
-        soundCorrect.play();
+    function validarRespuesta(i) {
+      const correcta = niveles[nivelActual][indicePregunta].correcta;
+      if (i === correcta) {
+        presupuesto += 10;
+        energia += 5;
+        document.getElementById("sonidoCorrecto").play();
       } else {
-        boton.classList.add('incorrect');
-        resultado.textContent = "❌ Incorrecto. Tu presupuesto disminuyó.";
-        soundIncorrect.play();
+        presupuesto -= 10;
+        energia -= 5;
+        document.getElementById("sonidoIncorrecto").play();
       }
-
-      document.getElementById('nextBtn').style.display = "inline-block";
-    }
-
-    function siguientePregunta() {
-      preguntaActual++;
-      if (preguntaActual < niveles[nivelActual].preguntas.length) {
+      indicePregunta++;
+      if (indicePregunta < niveles[nivelActual].length) {
         mostrarPregunta();
       } else {
-        document.getElementById('question').textContent = `¡Has completado ${niveles[nivelActual].nombre}!`;
-        document.getElementById('options').innerHTML = "";
-        document.getElementById('resultado').textContent = "Puedes cambiar de nivel para seguir aprendiendo.";
-        document.getElementById('nextBtn').style.display = "none";
+        document.getElementById("pregunta").innerText = "¡Has completado el Nivel " + nivelActual + "!";
+        document.getElementById("opciones").innerHTML = "";
       }
+      actualizarEstado();
     }
 
-    function cambiarNivel() {
-      nivelActual = (nivelActual + 1) % niveles.length;
-      preguntaActual = 0;
+    function actualizarEstado() {
+      document.getElementById("estado").innerText = `Presupuesto: $${presupuesto} | Energía: ${energia}`;
+    }
+
+    function cambiarNivel(nivel) {
+      nivelActual = nivel;
+      indicePregunta = 0;
       mostrarPregunta();
     }
 
