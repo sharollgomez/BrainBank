@@ -1,232 +1,193 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Juego Financiero Interactivo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainBank - Juego Financiero</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
       margin: 0;
-      padding: 0;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
+      padding: 20px;
       color: #333;
     }
-
-    .contenedor {
-      max-width: 800px;
+    .container {
+      max-width: 700px;
       margin: auto;
-      padding: 20px;
       background: white;
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      margin-top: 30px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }
-
     h1, h2 {
       text-align: center;
-      color: #0077b6;
+      color: #2a9d8f;
     }
-
-    .estado {
-      display: flex;
-      justify-content: space-between;
-      background: #caf0f8;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-weight: bold;
+    .question {
+      margin: 20px 0;
     }
-
-    .pregunta {
-      margin-top: 20px;
-    }
-
-    .opcion {
+    .options button {
       display: block;
       width: 100%;
       margin: 10px 0;
-      padding: 15px;
-      font-size: 16px;
-      background-color: #ade8f4;
+      padding: 10px;
       border: none;
       border-radius: 10px;
+      background-color: #e0e0e0;
+      font-size: 16px;
       cursor: pointer;
       transition: 0.3s;
     }
-
-    .opcion:hover {
-      background-color: #90e0ef;
+    .options button:hover {
+      background-color: #a8dadc;
     }
-
-    .boton {
-      padding: 12px 20px;
-      background-color: #0077b6;
+    .correct {
+      background-color: #8ecae6 !important;
+    }
+    .incorrect {
+      background-color: #f28482 !important;
+    }
+    #nextBtn, #nivelBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #2a9d8f;
       color: white;
       border: none;
       border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
-      margin-top: 20px;
+      display: inline-block;
     }
-
-    .boton:hover {
-      background-color: #023e8a;
-    }
-
-    .resultado {
-      margin-top: 15px;
-      font-weight: bold;
-      color: #023047;
-    }
-
-    video, img {
-      max-width: 100%;
-      border-radius: 15px;
-      margin: 10px 0;
-    }
-
-    .recompensa {
-      text-align: center;
-      font-size: 18px;
-      color: #38b000;
+    #nivelBtn {
+      float: right;
     }
   </style>
 </head>
 <body>
-  <div class="contenedor" id="pantallaInicio">
-    <h1>🎮 Juego Financiero: ¡Toma el control!</h1>
-    <img src="https://cdn.pixabay.com/photo/2020/06/18/06/07/savings-5312104_960_720.jpg" alt="Finanzas">
-    <p style="text-align:center">Aprende a manejar tu dinero mientras juegas. ¿Estás listo?</p>
-    <div style="text-align:center">
-      <button class="boton" onclick="empezarJuego()">Comenzar</button>
-    </div>
+  <div class="container">
+    <h1>BrainBank</h1>
+    <h2 id="nivel"></h2>
+    <button id="nivelBtn" onclick="cambiarNivel()">Cambiar Nivel</button>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <div class="question" id="resultado"></div>
+    <button id="nextBtn" onclick="siguientePregunta()">Siguiente</button>
   </div>
 
-  <div class="contenedor" id="pantallaJuego" style="display:none">
-    <div class="estado">
-      <div>💰 Presupuesto: $<span id="presupuesto">100</span></div>
-      <div>⚡ Energía: <span id="energia">100</span></div>
-    </div>
-
-    <video src="https://www.w3schools.com/html/mov_bbb.mp4" controls muted autoplay loop></video>
-
-    <div class="pregunta" id="pregunta"></div>
-    <div class="resultado" id="resultado"></div>
-    <div class="recompensa" id="recompensa"></div>
-    <button class="boton" id="siguienteBtn" onclick="siguientePregunta()" style="display:none">Siguiente</button>
-  </div>
-
-  <div class="contenedor" id="pantallaFinal" style="display:none">
-    <h2>🎉 ¡Juego terminado!</h2>
-    <p id="mensajeFinal"></p>
-    <div style="text-align:center">
-      <img src="https://cdn.pixabay.com/photo/2020/03/31/13/16/money-4985791_960_720.jpg" alt="Éxito financiero">
-    </div>
-    <div style="text-align:center">
-      <button class="boton" onclick="location.reload()">Volver a jugar</button>
-    </div>
-  </div>
-
-  <audio id="audioCorrecto" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
-  <audio id="audioError" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+  <audio id="soundCorrect" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
+  <audio id="soundIncorrect" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
 
   <script>
-    const preguntas = [
-      // mismas preguntas anteriores, puedes expandir
+    const niveles = [
       {
-        texto: "Tienes $100 y ves unos audífonos de moda por $90. ¿Qué haces?",
-        opciones: [
-          { texto: "Los compro ahora mismo", efecto: { presupuesto: -90, energia: -20 }, mensaje: "Gastaste demasiado. ¡Cuidado!", correcto: false },
-          { texto: "Busco una opción más barata", efecto: { presupuesto: -40, energia: -5 }, mensaje: "Buena elección, ahorraste.", correcto: true },
-          { texto: "Decido esperar y ahorrar", efecto: { presupuesto: 0, energia: 10 }, mensaje: "¡Perfecto! Priorizar está bien.", correcto: true }
+        nombre: "Nivel 1 - Básico",
+        preguntas: [
+          { texto: "Te dan $10 para el recreo...", opciones: [{ texto: "a) Lo compras todo de una vez.", correcta: false }, { texto: "b) Compras algo más barato y ahorras.", correcta: true }, { texto: "c) Le pides a un amigo que te preste más.", correcta: false }] },
+          { texto: "Quieres una nueva funda...", opciones: [{ texto: "a) Comprar otra porque están de moda.", correcta: false }, { texto: "b) Pensar si realmente la necesitas.", correcta: true }, { texto: "c) Pedirla y luego ver cómo pagas.", correcta: false }] },
+          { texto: "Te das cuenta que gastaste...", opciones: [{ texto: "a) Que deberías evitar salir.", correcta: false }, { texto: "b) Que es mejor registrar tus gastos.", correcta: true }, { texto: "c) Que está bien si es poco dinero.", correcta: false }] },
+          { texto: "Tienes $20 y quieres ahorrar...", opciones: [{ texto: "a) Gasto y ahorro lo que me sobre.", correcta: false }, { texto: "b) Separo los $5 y gasto lo demás.", correcta: true }, { texto: "c) No importa, siempre habrá más plata.", correcta: false }] },
+          { texto: "Tu familia te da una mesada...", opciones: [{ texto: "a) Gastarla rápido antes de perderla.", correcta: false }, { texto: "b) Pedir más si no alcanza.", correcta: false }, { texto: "c) Hacer un presupuesto sencillo.", correcta: true }] },
+          { texto: "¿Cuál es una buena razón para ahorrar?", opciones: [{ texto: "a) Para gastar más luego.", correcta: false }, { texto: "b) Para tener dinero en emergencias.", correcta: true }, { texto: "c) Porque los demás lo hacen.", correcta: false }] },
+          { texto: "Ves un anuncio llamativo de una oferta...", opciones: [{ texto: "a) Compras sin pensarlo.", correcta: false }, { texto: "b) Evalúas si lo necesitas.", correcta: true }, { texto: "c) Pides más dinero a tus padres.", correcta: false }] },
+          { texto: "Tus amigos salen todos los días...", opciones: [{ texto: "a) Les dices que no puedes gastar tanto.", correcta: true }, { texto: "b) Usas tu tarjeta sin ver saldo.", correcta: false }, { texto: "c) Le pides dinero a tu hermano.", correcta: false }] },
+          { texto: "¿Cuál es un gasto fijo?", opciones: [{ texto: "a) Una hamburguesa.", correcta: false }, { texto: "b) Mensualidad del celular.", correcta: true }, { texto: "c) Dulces.", correcta: false }] },
+          { texto: "¿Qué puedes hacer con tu cambio?", opciones: [{ texto: "a) Gastarlo en lo que sea.", correcta: false }, { texto: "b) Guardarlo en una alcancía.", correcta: true }, { texto: "c) Dárselo a otro.", correcta: false }] },
         ]
       },
       {
-        texto: "Recibes $50 por un trabajo extra. ¿Qué haces con el dinero?",
-        opciones: [
-          { texto: "Lo gasto en ropa nueva", efecto: { presupuesto: -50, energia: 10 }, mensaje: "Te viste bien, pero no ahorraste nada.", correcto: false },
-          { texto: "Ahorro todo el dinero", efecto: { presupuesto: 50, energia: 5 }, mensaje: "¡Buena jugada financiera!", correcto: true },
-          { texto: "Divido: gasto $25 y ahorro $25", efecto: { presupuesto: 25, energia: 10 }, mensaje: "Equilibrio perfecto.", correcto: true }
+        nombre: "Nivel 2 - Intermedio",
+        preguntas: [
+          { texto: "¿Qué es un presupuesto?", opciones: [{ texto: "a) Una lista de deseos.", correcta: false }, { texto: "b) Un plan para gastar tu dinero.", correcta: true }, { texto: "c) Un préstamo bancario.", correcta: false }] },
+          { texto: "Tienes un ingreso mensual de $30. ¿Qué es mejor?", opciones: [{ texto: "a) Gastar primero, luego ahorrar.", correcta: false }, { texto: "b) Ahorrar primero, luego gastar.", correcta: true }, { texto: "c) No necesitas ahorrar.", correcta: false }] },
+          { texto: "¿Qué es una meta financiera?", opciones: [{ texto: "a) Comprar impulsivamente.", correcta: false }, { texto: "b) Ahorrar para algo específico.", correcta: true }, { texto: "c) Hacer muchas deudas.", correcta: false }] },
+          { texto: "¿Qué representa una tarjeta de crédito?", opciones: [{ texto: "a) Dinero prestado.", correcta: true }, { texto: "b) Dinero regalado.", correcta: false }, { texto: "c) Premios bancarios.", correcta: false }] },
+          { texto: "¿Cuál es una forma inteligente de ahorrar?", opciones: [{ texto: "a) Ahorrar cuando sobra.", correcta: false }, { texto: "b) Hacerlo parte de tu presupuesto.", correcta: true }, { texto: "c) No es necesario ahorrar.", correcta: false }] },
+          { texto: "¿Qué es un gasto variable?", opciones: [{ texto: "a) El alquiler.", correcta: false }, { texto: "b) Salidas con amigos.", correcta: true }, { texto: "c) Pago de Netflix mensual.", correcta: false }] },
+          { texto: "¿Qué es el interés?", opciones: [{ texto: "a) El amor al dinero.", correcta: false }, { texto: "b) El dinero extra que ganas o pagas.", correcta: true }, { texto: "c) El precio original de algo.", correcta: false }] },
+          { texto: "¿Qué debes hacer antes de comprar algo grande?", opciones: [{ texto: "a) Gastar sin pensar.", correcta: false }, { texto: "b) Comparar precios.", correcta: true }, { texto: "c) Usar todo tu presupuesto.", correcta: false }] },
+          { texto: "¿Qué representa una deuda?", opciones: [{ texto: "a) Un gasto fijo.", correcta: false }, { texto: "b) Dinero que debes pagar.", correcta: true }, { texto: "c) Un premio financiero.", correcta: false }] },
+          { texto: "¿Qué puedes usar para llevar el control de tu dinero?", opciones: [{ texto: "a) Una hoja de cálculo.", correcta: true }, { texto: "b) La memoria.", correcta: false }, { texto: "c) Ningún método.", correcta: false }] },
+        ]
+      },
+      {
+        nombre: "Nivel 3 - Avanzado",
+        preguntas: [
+          { texto: "¿Qué es el ahorro a largo plazo?", opciones: [{ texto: "a) Ahorrar para el cine.", correcta: false }, { texto: "b) Ahorrar para la universidad.", correcta: true }, { texto: "c) Guardar el vuelto.", correcta: false }] },
+          { texto: "¿Qué es un fondo de emergencia?", opciones: [{ texto: "a) Dinero para gastar rápido.", correcta: false }, { texto: "b) Dinero guardado para imprevistos.", correcta: true }, { texto: "c) Un regalo del gobierno.", correcta: false }] },
+          { texto: "¿Por qué es importante el historial crediticio?", opciones: [{ texto: "a) Para comprar más cosas.", correcta: false }, { texto: "b) Para que te aprueben créditos.", correcta: true }, { texto: "c) Para evitar el ahorro.", correcta: false }] },
+          { texto: "¿Qué es invertir?", opciones: [{ texto: "a) Gastar en comida.", correcta: false }, { texto: "b) Poner dinero para obtener ganancias.", correcta: true }, { texto: "c) Prestar sin intereses.", correcta: false }] },
+          { texto: "¿Qué es el seguro de vida?", opciones: [{ texto: "a) Dinero para comprar comida.", correcta: false }, { texto: "b) Protección económica en caso de fallecer.", correcta: true }, { texto: "c) Préstamo del banco.", correcta: false }] },
+          { texto: "¿Qué son los impuestos?", opciones: [{ texto: "a) Dinero que ganas.", correcta: false }, { texto: "b) Dinero que pagas al gobierno.", correcta: true }, { texto: "c) Premios financieros.", correcta: false }] },
+          { texto: "¿Qué es el interés compuesto?", opciones: [{ texto: "a) Un interés aburrido.", correcta: false }, { texto: "b) Interés sobre el interés acumulado.", correcta: true }, { texto: "c) Deuda sin fin.", correcta: false }] },
+          { texto: "¿Por qué deberías diversificar inversiones?", opciones: [{ texto: "a) Para enfocarte en una sola.", correcta: false }, { texto: "b) Para reducir riesgos.", correcta: true }, { texto: "c) Porque es más divertido.", correcta: false }] },
+          { texto: "¿Qué es una tarjeta de débito?", opciones: [{ texto: "a) Una tarjeta de regalo.", correcta: false }, { texto: "b) Acceso a tu propio dinero.", correcta: true }, { texto: "c) Crédito del banco.", correcta: false }] },
+          { texto: "¿Qué puedes hacer si te endeudas demasiado?", opciones: [{ texto: "a) Ignorar la deuda.", correcta: false }, { texto: "b) Hacer un plan para pagarla.", correcta: true }, { texto: "c) Huir del banco.", correcta: false }] },
         ]
       }
     ];
 
-    let indice = 0;
-    let presupuesto = localStorage.getItem('presupuesto') ? parseInt(localStorage.getItem('presupuesto')) : 100;
-    let energia = localStorage.getItem('energia') ? parseInt(localStorage.getItem('energia')) : 100;
-
-    function empezarJuego() {
-      document.getElementById("pantallaInicio").style.display = "none";
-      document.getElementById("pantallaJuego").style.display = "block";
-      actualizarEstado();
-      mostrarPregunta();
-    }
-
-    function actualizarEstado() {
-      document.getElementById("presupuesto").innerText = presupuesto;
-      document.getElementById("energia").innerText = energia;
-      localStorage.setItem('presupuesto', presupuesto);
-      localStorage.setItem('energia', energia);
-    }
+    let nivelActual = 0;
+    let preguntaActual = 0;
 
     function mostrarPregunta() {
-      const pregunta = preguntas[indice];
-      let html = `<h2>${pregunta.texto}</h2>`;
-      pregunta.opciones.forEach((opcion, i) => {
-        html += `<button class="opcion" onclick="responder(${i})">${opcion.texto}</button>`;
+      const nivel = niveles[nivelActual];
+      document.getElementById('nivel').textContent = nivel.nombre;
+      const q = nivel.preguntas[preguntaActual];
+      document.getElementById('question').textContent = q.texto;
+      document.getElementById('resultado').textContent = "";
+      const opcionesDiv = document.getElementById('options');
+      opcionesDiv.innerHTML = "";
+      document.getElementById('nextBtn').style.display = "none";
+
+      q.opciones.forEach(op => {
+        const btn = document.createElement('button');
+        btn.textContent = op.texto;
+        btn.onclick = () => responder(op.correcta, btn);
+        opcionesDiv.appendChild(btn);
       });
-      document.getElementById("pregunta").innerHTML = html;
-      document.getElementById("resultado").innerText = "";
-      document.getElementById("recompensa").innerText = "";
-      document.getElementById("siguienteBtn").style.display = "none";
     }
 
-    function responder(indiceOpcion) {
-      const pregunta = preguntas[indice];
-      const opcion = pregunta.opciones[indiceOpcion];
+    function responder(correcta, boton) {
+      const soundCorrect = document.getElementById('soundCorrect');
+      const soundIncorrect = document.getElementById('soundIncorrect');
+      const resultado = document.getElementById('resultado');
 
-      presupuesto += opcion.efecto.presupuesto;
-      energia += opcion.efecto.energia;
+      const botones = document.querySelectorAll(".options button");
+      botones.forEach(btn => btn.disabled = true);
 
-      actualizarEstado();
-
-      document.getElementById("resultado").innerText = opcion.mensaje;
-      document.querySelectorAll(".opcion").forEach(btn => btn.disabled = true);
-      document.getElementById("siguienteBtn").style.display = "inline-block";
-
-      if (opcion.correcto) {
-        document.getElementById("audioCorrecto").play();
-        document.getElementById("recompensa").innerText = "🏆 ¡Ganaste una insignia por buena decisión!";
+      if (correcta) {
+        boton.classList.add('correct');
+        resultado.textContent = "✅ ¡Correcto! Tu presupuesto aumentó.";
+        soundCorrect.play();
       } else {
-        document.getElementById("audioError").play();
+        boton.classList.add('incorrect');
+        resultado.textContent = "❌ Incorrecto. Tu presupuesto disminuyó.";
+        soundIncorrect.play();
       }
+
+      document.getElementById('nextBtn').style.display = "inline-block";
     }
 
     function siguientePregunta() {
-      indice++;
-      if (indice < preguntas.length) {
+      preguntaActual++;
+      if (preguntaActual < niveles[nivelActual].preguntas.length) {
         mostrarPregunta();
       } else {
-        mostrarFinal();
+        document.getElementById('question').textContent = `¡Has completado ${niveles[nivelActual].nombre}!`;
+        document.getElementById('options').innerHTML = "";
+        document.getElementById('resultado').textContent = "Puedes cambiar de nivel para seguir aprendiendo.";
+        document.getElementById('nextBtn').style.display = "none";
       }
     }
 
-    function mostrarFinal() {
-      document.getElementById("pantallaJuego").style.display = "none";
-      document.getElementById("pantallaFinal").style.display = "block";
-
-      let mensaje;
-      if (presupuesto > 80 && energia > 80) {
-        mensaje = "¡Excelente! Sabes manejar bien tus recursos 💪";
-      } else if (presupuesto > 50) {
-        mensaje = "Lo hiciste bien. ¡Sigue practicando! 👍";
-      } else {
-        mensaje = "Podrías mejorar tus decisiones. ¡Inténtalo de nuevo! 🙃";
-      }
-
-      document.getElementById("mensajeFinal").innerText = mensaje;
-      localStorage.clear();
+    function cambiarNivel() {
+      nivelActual = (nivelActual + 1) % niveles.length;
+      preguntaActual = 0;
+      mostrarPregunta();
     }
+
+    mostrarPregunta();
   </script>
 </body>
 </html>
