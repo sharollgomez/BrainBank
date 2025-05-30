@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego Financiero Interactivo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      color: #333;
+    }
+
+    .contenedor {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      margin-top: 30px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #0077b6;
+    }
+
+    .estado {
+      display: flex;
+      justify-content: space-between;
+      background: #caf0f8;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .pregunta {
+      margin-top: 20px;
+    }
+
+    .opcion {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 16px;
+      background-color: #ade8f4;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .opcion:hover {
+      background-color: #90e0ef;
+    }
+
+    .boton {
+      padding: 12px 20px;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .boton:hover {
+      background-color: #023e8a;
+    }
+
+    .resultado {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #023047;
+    }
+
+    video, img {
+      max-width: 100%;
+      border-radius: 15px;
+      margin: 10px 0;
+    }
+
+    .recompensa {
+      text-align: center;
+      font-size: 18px;
+      color: #38b000;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor" id="pantallaInicio">
+    <h1>🎮 Juego Financiero: ¡Toma el control!</h1>
+    <img src="https://cdn.pixabay.com/photo/2020/06/18/06/07/savings-5312104_960_720.jpg" alt="Finanzas">
+    <p style="text-align:center">Aprende a manejar tu dinero mientras juegas. ¿Estás listo?</p>
+    <div style="text-align:center">
+      <button class="boton" onclick="empezarJuego()">Comenzar</button>
+    </div>
+  </div>
+
+  <div class="contenedor" id="pantallaJuego" style="display:none">
+    <div class="estado">
+      <div>💰 Presupuesto: $<span id="presupuesto">100</span></div>
+      <div>⚡ Energía: <span id="energia">100</span></div>
+    </div>
+
+    <video src="https://www.w3schools.com/html/mov_bbb.mp4" controls muted autoplay loop></video>
+
+    <div class="pregunta" id="pregunta"></div>
+    <div class="resultado" id="resultado"></div>
+    <div class="recompensa" id="recompensa"></div>
+    <button class="boton" id="siguienteBtn" onclick="siguientePregunta()" style="display:none">Siguiente</button>
+  </div>
+
+  <div class="contenedor" id="pantallaFinal" style="display:none">
+    <h2>🎉 ¡Juego terminado!</h2>
+    <p id="mensajeFinal"></p>
+    <div style="text-align:center">
+      <img src="https://cdn.pixabay.com/photo/2020/03/31/13/16/money-4985791_960_720.jpg" alt="Éxito financiero">
+    </div>
+    <div style="text-align:center">
+      <button class="boton" onclick="location.reload()">Volver a jugar</button>
+    </div>
+  </div>
+
+  <audio id="audioCorrecto" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
+  <audio id="audioError" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+  <script>
+    const preguntas = [
+      // mismas preguntas anteriores, puedes expandir
+      {
+        texto: "Tienes $100 y ves unos audífonos de moda por $90. ¿Qué haces?",
+        opciones: [
+          { texto: "Los compro ahora mismo", efecto: { presupuesto: -90, energia: -20 }, mensaje: "Gastaste demasiado. ¡Cuidado!", correcto: false },
+          { texto: "Busco una opción más barata", efecto: { presupuesto: -40, energia: -5 }, mensaje: "Buena elección, ahorraste.", correcto: true },
+          { texto: "Decido esperar y ahorrar", efecto: { presupuesto: 0, energia: 10 }, mensaje: "¡Perfecto! Priorizar está bien.", correcto: true }
+        ]
+      },
+      {
+        texto: "Recibes $50 por un trabajo extra. ¿Qué haces con el dinero?",
+        opciones: [
+          { texto: "Lo gasto en ropa nueva", efecto: { presupuesto: -50, energia: 10 }, mensaje: "Te viste bien, pero no ahorraste nada.", correcto: false },
+          { texto: "Ahorro todo el dinero", efecto: { presupuesto: 50, energia: 5 }, mensaje: "¡Buena jugada financiera!", correcto: true },
+          { texto: "Divido: gasto $25 y ahorro $25", efecto: { presupuesto: 25, energia: 10 }, mensaje: "Equilibrio perfecto.", correcto: true }
+        ]
+      }
+    ];
+
+    let indice = 0;
+    let presupuesto = localStorage.getItem('presupuesto') ? parseInt(localStorage.getItem('presupuesto')) : 100;
+    let energia = localStorage.getItem('energia') ? parseInt(localStorage.getItem('energia')) : 100;
+
+    function empezarJuego() {
+      document.getElementById("pantallaInicio").style.display = "none";
+      document.getElementById("pantallaJuego").style.display = "block";
+      actualizarEstado();
+      mostrarPregunta();
+    }
+
+    function actualizarEstado() {
+      document.getElementById("presupuesto").innerText = presupuesto;
+      document.getElementById("energia").innerText = energia;
+      localStorage.setItem('presupuesto', presupuesto);
+      localStorage.setItem('energia', energia);
+    }
+
+    function mostrarPregunta() {
+      const pregunta = preguntas[indice];
+      let html = `<h2>${pregunta.texto}</h2>`;
+      pregunta.opciones.forEach((opcion, i) => {
+        html += `<button class="opcion" onclick="responder(${i})">${opcion.texto}</button>`;
+      });
+      document.getElementById("pregunta").innerHTML = html;
+      document.getElementById("resultado").innerText = "";
+      document.getElementById("recompensa").innerText = "";
+      document.getElementById("siguienteBtn").style.display = "none";
+    }
+
+    function responder(indiceOpcion) {
+      const pregunta = preguntas[indice];
+      const opcion = pregunta.opciones[indiceOpcion];
+
+      presupuesto += opcion.efecto.presupuesto;
+      energia += opcion.efecto.energia;
+
+      actualizarEstado();
+
+      document.getElementById("resultado").innerText = opcion.mensaje;
+      document.querySelectorAll(".opcion").forEach(btn => btn.disabled = true);
+      document.getElementById("siguienteBtn").style.display = "inline-block";
+
+      if (opcion.correcto) {
+        document.getElementById("audioCorrecto").play();
+        document.getElementById("recompensa").innerText = "🏆 ¡Ganaste una insignia por buena decisión!";
+      } else {
+        document.getElementById("audioError").play();
+      }
+    }
+
+    function siguientePregunta() {
+      indice++;
+      if (indice < preguntas.length) {
+        mostrarPregunta();
+      } else {
+        mostrarFinal();
+      }
+    }
+
+    function mostrarFinal() {
+      document.getElementById("pantallaJuego").style.display = "none";
+      document.getElementById("pantallaFinal").style.display = "block";
+
+      let mensaje;
+      if (presupuesto > 80 && energia > 80) {
+        mensaje = "¡Excelente! Sabes manejar bien tus recursos 💪";
+      } else if (presupuesto > 50) {
+        mensaje = "Lo hiciste bien. ¡Sigue practicando! 👍";
+      } else {
+        mensaje = "Podrías mejorar tus decisiones. ¡Inténtalo de nuevo! 🙃";
+      }
+
+      document.getElementById("mensajeFinal").innerText = mensaje;
+      localStorage.clear();
+    }
+  </script>
+</body>
+</html>
