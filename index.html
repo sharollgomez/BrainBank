@@ -53,14 +53,12 @@
       margin-top: 10px;
       height: 30px;
     }
-    .level-button {
-      margin-top: 20px;
-      background-color: #003366;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
+    select {
+      padding: 8px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -68,6 +66,16 @@
 
 <div class="game-container">
   <h1>BrainBank 💰</h1>
+
+  <div>
+    <label for="nivelSelect"><strong>Seleccionar nivel:</strong></label>
+    <select id="nivelSelect" onchange="seleccionarNivel(this.value)">
+      <option value="0">Nivel Básico</option>
+      <option value="1">Nivel Intermedio</option>
+      <option value="2">Nivel Avanzado</option>
+    </select>
+  </div>
+
   <div class="status-bar">
     <div id="nivel">Nivel: Básico</div>
     <div id="presupuesto">Presupuesto: $100</div>
@@ -77,7 +85,6 @@
   <div class="question" id="pregunta">Cargando pregunta...</div>
   <div id="opciones"></div>
   <div class="feedback" id="feedback"></div>
-  <button class="level-button" onclick="cambiarNivel()">Cambiar de Nivel</button>
 </div>
 
 <!-- Sonidos -->
@@ -189,8 +196,8 @@
     document.getElementById("energia").textContent = `Energía: ${energia}%`;
   }
 
-  function cambiarNivel() {
-    nivelActual = (nivelActual + 1) % 3;
+  function seleccionarNivel(nuevoNivel) {
+    nivelActual = parseInt(nuevoNivel);
     preguntaActual = 0;
     cargarPregunta();
   }
