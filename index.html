@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>BrainBank - Juego de Finanzas</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f4f8;
-      color: #000;
-      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
       padding: 20px;
     }
     .game-container {
-      max-width: 800px;
+      max-width: 700px;
       margin: auto;
       background-color: #fff;
-      border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h1 {
-      color: #003366;
       text-align: center;
+      color: #003366;
     }
     .status-bar {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 15px;
       font-weight: bold;
+      margin-bottom: 15px;
     }
     .question {
       font-size: 1.2rem;
@@ -38,42 +36,38 @@
       width: 100%;
       padding: 12px;
       margin-bottom: 10px;
-      background-color: #d9e3f0;
+      background-color: #e0ecf7;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: 0.3s;
     }
     .option:hover {
-      background-color: #aac4e6;
+      background-color: #c6d9f1;
     }
     .feedback {
+      height: 30px;
       font-weight: bold;
       margin-top: 10px;
-      height: 30px;
     }
-    #resultado {
-      display: none;
-      margin-top: 20px;
-      background: #e8f4ec;
+    .summary {
+      background-color: #e9ffe9;
+      border: 1px solid #4CAF50;
       padding: 15px;
-      border-radius: 8px;
+      border-radius: 10px;
+      margin-top: 20px;
     }
     select {
+      margin-bottom: 10px;
       padding: 8px;
-      margin-bottom: 15px;
       border-radius: 6px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-
 <div class="game-container">
   <h1>BrainBank 💰</h1>
-
   <div>
     <label for="nivelSelect"><strong>Seleccionar nivel:</strong></label>
     <select id="nivelSelect" onchange="seleccionarNivel(this.value)">
@@ -82,22 +76,16 @@
       <option value="2">Nivel Avanzado</option>
     </select>
   </div>
-
   <div class="status-bar">
     <div id="nivel">Nivel: Básico</div>
     <div id="presupuesto">Presupuesto: $100</div>
     <div id="energia">Energía: 100%</div>
   </div>
-
   <div class="question" id="pregunta">Cargando pregunta...</div>
   <div id="opciones"></div>
   <div class="feedback" id="feedback"></div>
-  <div id="resultado"></div>
+  <div class="summary" id="resumen" style="display: none;"></div>
 </div>
-
-<audio id="sound-correct" src="correct.mp3"></audio>
-<audio id="sound-wrong" src="wrong.mp3"></audio>
-<audio id="sound-click" src="click.mp3"></audio>
 
 <script>
 const niveles = ["Básico", "Intermedio", "Avanzado"];
@@ -108,130 +96,116 @@ let energia = 100;
 let respuestasCorrectas = 0;
 
 const preguntas = [
-  // Nivel Básico
+  // Básico
   [
     { pregunta: "¿Qué es un presupuesto?", opciones: [
-        { texto: "Una forma de ahorrar", energia: 0 },
-        { texto: "Un plan para usar el dinero", energia: +10, correcta: true },
-        { texto: "Un impuesto", energia: -10 }
-      ]
-    },
+      { texto: "Una forma de ahorrar", energia: -5 },
+      { texto: "Un plan para usar el dinero ✅", energia: 10 },
+      { texto: "Un impuesto", energia: -10 }
+    ], correcta: 1 },
     { pregunta: "¿Cuál es una buena forma de ahorrar?", opciones: [
-        { texto: "Ahorrar lo que sobra", energia: +10, correcta: true },
-        { texto: "Gastar primero", energia: -10 },
-        { texto: "Pedir dinero", energia: -10 }
-      ]
-    },
+      { texto: "Ahorrar lo que sobra ✅", energia: 5 },
+      { texto: "Gastar primero", energia: -10 },
+      { texto: "Pedir dinero", energia: -10 }
+    ], correcta: 0 },
     { pregunta: "¿Qué es una necesidad básica?", opciones: [
-        { texto: "Celular nuevo", energia: -10 },
-        { texto: "Comida y vivienda", energia: +10, correcta: true },
-        { texto: "Vacaciones", energia: -10 }
-      ]
-    },
+      { texto: "Celular nuevo", energia: -5 },
+      { texto: "Comida y vivienda ✅", energia: 10 },
+      { texto: "Vacaciones", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Qué es un ingreso?", opciones: [
-        { texto: "Un gasto", energia: -10 },
-        { texto: "Dinero que ganas", energia: +10, correcta: true },
-        { texto: "Una deuda", energia: -10 }
-      ]
-    },
+      { texto: "Un gasto", energia: -5 },
+      { texto: "Dinero que ganas ✅", energia: 10 },
+      { texto: "Una deuda", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Qué es un gasto fijo?", opciones: [
-        { texto: "Comida rápida", energia: -10 },
-        { texto: "Pago mensual de internet", energia: +10, correcta: true },
-        { texto: "Compras al azar", energia: -10 }
-      ]
-    },
+      { texto: "Comida rápida", energia: -5 },
+      { texto: "Pago mensual de internet ✅", energia: 10 },
+      { texto: "Compras al azar", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Qué es un gasto variable?", opciones: [
-        { texto: "Mismo monto mensual", energia: -10 },
-        { texto: "Compra de ropa", energia: +10, correcta: true },
-        { texto: "Salario", energia: -10 }
-      ]
-    },
+      { texto: "Mismo monto mensual", energia: -5 },
+      { texto: "Compra de ropa ✅", energia: 5 },
+      { texto: "Salario", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Qué significa vivir dentro de tus posibilidades?", opciones: [
-        { texto: "Gastar más de lo que ganas", energia: -10 },
-        { texto: "Gastar lo justo", energia: +10, correcta: true },
-        { texto: "Pedir prestado", energia: -10 }
-      ]
-    },
+      { texto: "Gastar más de lo que ganas", energia: -10 },
+      { texto: "Gastar lo justo ✅", energia: 10 },
+      { texto: "Pedir prestado", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Por qué es importante ahorrar desde joven?", opciones: [
-        { texto: "Para presumir", energia: -10 },
-        { texto: "Para aprender buenos hábitos", energia: +10, correcta: true },
-        { texto: "Para gastar más", energia: -10 }
-      ]
-    },
+      { texto: "Para presumir", energia: -5 },
+      { texto: "Para aprender buenos hábitos ✅", energia: 10 },
+      { texto: "Para gastar más", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Qué es el ahorro a corto plazo?", opciones: [
-        { texto: "Para el retiro", energia: -10 },
-        { texto: "Para compras cercanas", energia: +10, correcta: true },
-        { texto: "Una deuda", energia: -10 }
-      ]
-    },
+      { texto: "Para el retiro", energia: -5 },
+      { texto: "Para compras cercanas ✅", energia: 10 },
+      { texto: "Una deuda", energia: -5 }
+    ], correcta: 1 },
     { pregunta: "¿Qué pasa si gastas más de lo que ganas?", opciones: [
-        { texto: "Ahorras más", energia: -10 },
-        { texto: "Te endeudas", energia: +10, correcta: true },
-        { texto: "Nada", energia: -10 }
-      ]
-    }
+      { texto: "Ahorras más", energia: -5 },
+      { texto: "Te endeudas ✅", energia: 10 },
+      { texto: "Nada", energia: -5 }
+    ], correcta: 1 }
   ],
-  // Nivel Intermedio y Avanzado (puedes copiar y pegar con el mismo formato que el básico)
-  [...Array(10)].map((_, i) => ({
-    pregunta: `Intermedio: pregunta ${i+1}`,
+  // Intermedio (puedes copiar el mismo formato y ajustar preguntas)
+  [...Array(10).fill({
+    pregunta: "Pregunta intermedia de ejemplo",
     opciones: [
-      { texto: "Opción A", energia: -10 },
-      { texto: "Opción B", energia: +10, correcta: true },
-      { texto: "Opción C", energia: -10 }
-    ]
-  })),
-  [...Array(10)].map((_, i) => ({
-    pregunta: `Avanzado: pregunta ${i+1}`,
+      { texto: "Opción 1", energia: -5 },
+      { texto: "Opción correcta ✅", energia: 10 },
+      { texto: "Opción 3", energia: -5 }
+    ],
+    correcta: 1
+  })],
+  // Avanzado (igual)
+  [...Array(10).fill({
+    pregunta: "Pregunta avanzada de ejemplo",
     opciones: [
-      { texto: "Opción A", energia: -10 },
-      { texto: "Opción B", energia: +10, correcta: true },
-      { texto: "Opción C", energia: -10 }
-    ]
-  }))
+      { texto: "Incorrecta", energia: -5 },
+      { texto: "Correcta ✅", energia: 10 },
+      { texto: "Incorrecta", energia: -5 }
+    ],
+    correcta: 1
+  })]
 ];
 
 function cargarPregunta() {
   if (energia <= 0) {
-    document.getElementById("pregunta").textContent = "⚠ Energía agotada. No puedes continuar.";
+    document.getElementById("pregunta").textContent = "❌ Energía agotada. No puedes continuar.";
     document.getElementById("opciones").innerHTML = "";
     return;
   }
 
-  const nivel = preguntas[nivelActual];
-  const q = nivel[preguntaActual];
-
+  const q = preguntas[nivelActual][preguntaActual];
   document.getElementById("pregunta").textContent = q.pregunta;
   document.getElementById("opciones").innerHTML = "";
-  document.getElementById("nivel").textContent = `Nivel: ${niveles[nivelActual]}`;
 
-  q.opciones.forEach((opt, i) => {
+  q.opciones.forEach((op, i) => {
     const btn = document.createElement("button");
-    btn.textContent = opt.texto;
+    btn.textContent = op.texto.replace(" ✅", "");
     btn.className = "option";
-    btn.onclick = () => responder(opt);
+    btn.onclick = () => responder(i, q.correcta, op.energia);
     document.getElementById("opciones").appendChild(btn);
   });
 
   document.getElementById("feedback").textContent = "";
+  document.getElementById("resumen").style.display = "none";
 }
 
-function responder(opcion) {
-  document.getElementById("sound-click").play();
-  energia += opcion.energia;
-  energia = Math.max(0, Math.min(energia, 100));
+function responder(seleccionada, correcta, energiaCambio) {
+  energia += energiaCambio;
+  if (energia > 100) energia = 100;
+  if (energia < 0) energia = 0;
 
-  const feedback = document.getElementById("feedback");
-  if (opcion.correcta) {
+  if (seleccionada === correcta) {
     presupuesto += 10;
     respuestasCorrectas++;
-    document.getElementById("sound-correct").play();
-    feedback.textContent = "✅ ¡Correcto!";
-    feedback.style.color = "green";
+    mostrarFeedback("✅ ¡Correcto!", "green");
   } else {
     presupuesto -= 5;
-    document.getElementById("sound-wrong").play();
-    feedback.textContent = "❌ Incorrecto.";
-    feedback.style.color = "red";
+    mostrarFeedback("❌ Incorrecto.", "red");
   }
 
   actualizarBarra();
@@ -241,14 +215,31 @@ function responder(opcion) {
     if (preguntaActual < preguntas[nivelActual].length && energia > 0) {
       cargarPregunta();
     } else {
-      mostrarResultado();
+      mostrarResumen();
     }
-  }, 1500);
+  }, 1200);
 }
 
 function actualizarBarra() {
   document.getElementById("presupuesto").textContent = `Presupuesto: $${presupuesto}`;
   document.getElementById("energia").textContent = `Energía: ${energia}%`;
+}
+
+function mostrarFeedback(texto, color) {
+  const feedback = document.getElementById("feedback");
+  feedback.textContent = texto;
+  feedback.style.color = color;
+}
+
+function mostrarResumen() {
+  const resumen = document.getElementById("resumen");
+  resumen.style.display = "block";
+  resumen.innerHTML = `
+    <h3>🎉 ¡Nivel completado!</h3>
+    <p>Respuestas correctas: ${respuestasCorrectas}/${preguntas[nivelActual].length}</p>
+    <p>Presupuesto final: $${presupuesto}</p>
+    <p>Energía final: ${energia}%</p>
+  `;
 }
 
 function seleccionarNivel(n) {
@@ -257,28 +248,12 @@ function seleccionarNivel(n) {
   presupuesto = 100;
   energia = 100;
   respuestasCorrectas = 0;
-  document.getElementById("resultado").style.display = "none";
-  cargarPregunta();
+  document.getElementById("nivel").textContent = `Nivel: ${niveles[nivelActual]}`;
   actualizarBarra();
+  cargarPregunta();
 }
 
-function mostrarResultado() {
-  document.getElementById("pregunta").textContent = "";
-  document.getElementById("opciones").innerHTML = "";
-  document.getElementById("feedback").textContent = "";
-  const total = preguntas[nivelActual].length;
-  const resultado = `
-    <h3>Resumen del nivel ${niveles[nivelActual]}</h3>
-    <p>✅ Respuestas correctas: ${respuestasCorrectas} / ${total}</p>
-    <p>💰 Presupuesto final: $${presupuesto}</p>
-    <p⚡ Energía final: ${energia}%</p>
-  `;
-  document.getElementById("resultado").innerHTML = resultado;
-  document.getElementById("resultado").style.display = "block";
-}
-
-cargarPregunta();
+seleccionarNivel(0);
 </script>
-
 </body>
 </html>
