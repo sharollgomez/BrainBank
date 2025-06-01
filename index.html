@@ -189,10 +189,26 @@
       document.getElementById("energia").textContent = energia;
     }
 
-    function seleccionarRespuesta(indiceSeleccionado, indiceCorrecto, boton) {
-      const respuestaContenedor = boton.parentElement.nextElementSibling;
-      const botones = boton.parentElement.querySelectorAll('button');
-      botones.forEach(b => b.disabled = true);
+    function mostrarPregunta() {
+      const contenedor = document.getElementById("nivelContainer");
+      contenedor.innerHTML = "";
+
+      if (preguntaActual >= totalPreguntas || energia <= 0) {
+        mostrarResultado();
+        return;
+      }
+
+      const [pregunta, correcta, opciones] = preguntas[preguntaActual];
+      const div = document.createElement("div");
+      div.className = "pregunta";
+      const opcionesHTML = opciones.map((op, idx) =>
+        `<button onclick="seleccionarRespuesta(${idx}, ${correcta})">${op}</button>`).join("");
+      div.innerHTML = `<p><strong>Pregunta ${preguntaActual + 1}/${totalPreguntas}:</strong> ${pregunta}</p><div class="opciones">${opcionesHTML}</div><div class="respuesta" id="respuesta"></div>`;
+      contenedor.appendChild(div);
+    }
+
+    function seleccionarRespuesta(indiceSeleccionado, indiceCorrecto) {
+      const respuestaContenedor = document.getElementById("respuesta");
 
       if (indiceSeleccionado === indiceCorrecto) {
         respuestaContenedor.textContent = "✅ ¡Correcto!";
@@ -211,50 +227,19 @@
       actualizarStats();
       guardarProgreso();
 
-      if (energia <= 0 || preguntaActual === totalPreguntas) {
-        mostrarResultado();
-      }
+      setTimeout(() => {
+        mostrarPregunta();
+      }, 1500);
     }
 
     function mostrarResultado() {
       const contenedor = document.getElementById("resultadoFinal");
       const porcentaje = Math.round((puntuacion / totalPreguntas) * 100);
       contenedor.innerHTML = `🏁 Nivel finalizado.<br>✔️ Preguntas correctas: ${puntuacion} de ${totalPreguntas}<br>📊 Rendimiento: ${porcentaje}%`;
-
-      const botones = document.querySelectorAll(".opciones button");
-      botones.forEach(b => b.disabled = true);
     }
 
-    function renderNivel(preguntas) {
-      const contenedor = document.getElementById("nivelContainer");
-      preguntas.forEach((preg, i) => {
-        const div = document.createElement("div");
-        div.className = "pregunta";
-        const opcionesHTML = preg[2].map((op, idx) =>
-          `<button onclick="seleccionarRespuesta(${idx}, ${preg[1]}, this)">${op}</button>`).join("");
-        div.innerHTML = `<p>${i + 1}. ${preg[0]}</p><div class="opciones">${opcionesHTML}</div><div class="respuesta"></div>`;
-        contenedor.appendChild(div);
-      });
-
-      // Deshabilita las ya respondidas si hay progreso guardado
-      if (preguntaActual > 0) {
-        const preguntasDOM = document.querySelectorAll(".pregunta");
-        preguntasDOM.forEach((p, index) => {
-          if (index < preguntaActual) {
-            const botones = p.querySelectorAll("button");
-            botones.forEach(b => b.disabled = true);
-          }
-        });
-      }
-
-      if (energia <= 0 || preguntaActual === totalPreguntas) {
-        mostrarResultado();
-      }
-    }
-
-    renderNivel(preguntas);
     actualizarStats();
+    mostrarPregunta();
   </script>
 </body>
 </html>
-s
