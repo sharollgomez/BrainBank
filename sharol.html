@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainBank</title>
+  <style>
+    :root {
+      --verde-principal: #28C76F;
+      --turquesa: #00CFE8;
+      --fondo: #0C1E35;
+      --texto-principal: #FFFFFF;
+      --texto-secundario: #AAB8C2;
+      --hover: #20B463;
+      --error: #FF5B5C;
+      --exito: #FFD15C;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--fondo);
+      color: var(--texto-principal);
+    }
+
+    header {
+      background-color: var(--verde-principal);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    nav a {
+      color: var(--texto-principal);
+      text-decoration: none;
+      margin-left: 1rem;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: var(--exito);
+    }
+
+    main {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .btn-principal {
+      background-color: var(--turquesa);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      color: var(--fondo);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-principal:hover {
+      background-color: var(--hover);
+      color: var(--texto-principal);
+    }
+
+    .nivel {
+      background-color: #12263A;
+      margin: 1.5rem auto;
+      padding: 1.5rem;
+      border-radius: 10px;
+      max-width: 800px;
+      text-align: left;
+    }
+
+    .pregunta {
+      margin: 1rem 0;
+    }
+
+    .opciones button {
+      display: block;
+      margin: 0.5rem 0;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--verde-principal);
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .opciones button:hover {
+      background-color: var(--hover);
+    }
+
+    .respuesta {
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+
+    .stats {
+      margin: 1rem 0;
+      font-size: 1.2rem;
+    }
+
+    #resultadoFinal {
+      background-color: #0f2a47;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #071522;
+      color: var(--texto-secundario);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BrainBank</h1>
+    <nav>
+      <a href="#">Inicio</a>
+      <a href="#niveles">Niveles</a>
+      <a href="#perfil">Perfil</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Bienvenido a BrainBank</h2>
+    <p>Mejora tu inteligencia financiera a través de retos, niveles y decisiones reales.</p>
+    <div class="stats">
+      💰 Presupuesto: $<span id="presupuesto">100</span> | ⚡ Energía: <span id="energia">100</span>
+    </div>
+    <button class="btn-principal" onclick="reiniciarJuego()">🔄 Reiniciar progreso</button>
+    <div id="resultadoFinal"></div>
+
+    <section id="niveles">
+      <div class="nivel" id="nivelContainer"></div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 BrainBank. Todos los derechos reservados.
+  </footer>
+
+  <script>
+    let presupuesto = parseInt(localStorage.getItem("presupuesto")) || 100;
+    let energia = parseInt(localStorage.getItem("energia")) || 100;
+    let puntuacion = parseInt(localStorage.getItem("puntuacion")) || 0;
+    let preguntaActual = parseInt(localStorage.getItem("preguntaActual")) || 0;
+    const totalPreguntas = 10;
+
+    const preguntas = [
+      ["¿Qué es un presupuesto?", 1, ["Un gasto innecesario", "Un plan para organizar tus ingresos y gastos", "Una forma de ganar dinero"]],
+      ["¿Qué es un ingreso?", 0, ["Dinero que recibes", "Dinero que gastas", "Dinero que ahorras"]],
+      ["¿Qué es un gasto fijo?", 2, ["Un gasto que no es necesario", "Un gasto que cambia cada mes", "Un gasto que ocurre regularmente y no varía mucho"]],
+      ["¿Por qué es importante ahorrar?", 1, ["Para gastar más", "Para estar preparado para emergencias", "Para no trabajar"]],
+      ["¿Qué es una cuenta de ahorro?", 2, ["Un lugar donde guardas efectivo", "Una tarjeta de crédito", "Un producto bancario para guardar y ganar dinero"]],
+      ["¿Qué es una necesidad?", 1, ["Un lujo", "Algo esencial para vivir", "Un deseo"]],
+      ["¿Qué significa presupuesto balanceado?", 0, ["Ingresos iguales a gastos", "Gastar más que ganas", "No gastar nada"]],
+      ["¿Qué representa el efectivo?", 2, ["Crédito", "Ahorro", "Dinero físico en billetes y monedas"]],
+      ["¿Qué es una deuda?", 1, ["Dinero ahorrado", "Dinero que debes pagar", "Un descuento"]],
+      ["¿Qué es un banco?", 0, ["Una institución financiera", "Un supermercado", "Un lugar para hacer compras"]]
+    ];
+
+    function guardarProgreso() {
+      localStorage.setItem("presupuesto", presupuesto);
+      localStorage.setItem("energia", energia);
+      localStorage.setItem("puntuacion", puntuacion);
+      localStorage.setItem("preguntaActual", preguntaActual);
+    }
+
+    function reiniciarJuego() {
+      localStorage.clear();
+      location.reload();
+    }
+
+    function actualizarStats() {
+      document.getElementById("presupuesto").textContent = presupuesto;
+      document.getElementById("energia").textContent = energia;
+    }
+
+    function seleccionarRespuesta(indiceSeleccionado, indiceCorrecto, boton) {
+      const respuestaContenedor = boton.parentElement.nextElementSibling;
+      const botones = boton.parentElement.querySelectorAll('button');
+      botones.forEach(b => b.disabled = true);
+
+      if (indiceSeleccionado === indiceCorrecto) {
+        respuestaContenedor.textContent = "✅ ¡Correcto!";
+        respuestaContenedor.style.color = "var(--exito)";
+        presupuesto += 10;
+        energia += 5;
+        puntuacion++;
+      } else {
+        respuestaContenedor.textContent = "❌ Incorrecto.";
+        respuestaContenedor.style.color = "var(--error)";
+        presupuesto -= 10;
+        energia -= 10;
+      }
+
+      preguntaActual++;
+      actualizarStats();
+      guardarProgreso();
+
+      if (energia <= 0 || preguntaActual === totalPreguntas) {
+        mostrarResultado();
+      }
+    }
+
+    function mostrarResultado() {
+      const contenedor = document.getElementById("resultadoFinal");
+      const porcentaje = Math.round((puntuacion / totalPreguntas) * 100);
+      contenedor.innerHTML = `🏁 Nivel finalizado.<br>✔️ Preguntas correctas: ${puntuacion} de ${totalPreguntas}<br>📊 Rendimiento: ${porcentaje}%`;
+
+      const botones = document.querySelectorAll(".opciones button");
+      botones.forEach(b => b.disabled = true);
+    }
+
+    function renderNivel(preguntas) {
+      const contenedor = document.getElementById("nivelContainer");
+      preguntas.forEach((preg, i) => {
+        const div = document.createElement("div");
+        div.className = "pregunta";
+        const opcionesHTML = preg[2].map((op, idx) =>
+          `<button onclick="seleccionarRespuesta(${idx}, ${preg[1]}, this)">${op}</button>`).join("");
+        div.innerHTML = `<p>${i + 1}. ${preg[0]}</p><div class="opciones">${opcionesHTML}</div><div class="respuesta"></div>`;
+        contenedor.appendChild(div);
+      });
+
+      // Deshabilita las ya respondidas si hay progreso guardado
+      if (preguntaActual > 0) {
+        const preguntasDOM = document.querySelectorAll(".pregunta");
+        preguntasDOM.forEach((p, index) => {
+          if (index < preguntaActual) {
+            const botones = p.querySelectorAll("button");
+            botones.forEach(b => b.disabled = true);
+          }
+        });
+      }
+
+      if (energia <= 0 || preguntaActual === totalPreguntas) {
+        mostrarResultado();
+      }
+    }
+
+    renderNivel(preguntas);
+    actualizarStats();
+  </script>
+</body>
+</html>
+s
