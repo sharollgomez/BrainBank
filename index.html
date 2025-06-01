@@ -5,6 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BrainBank</title>
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0C1E35; /* Fondo azul oscuro que combina con el logo */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+
+    img {
+      width: 180px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <img src="A_logo_for_\"BrainBank\"_features_a_stylized_brain_c.png" alt="BrainBank Logo" />
+  <div class="loading">Cargando...</div>
+
+  <script>
+    // Redirecciona a la página principal luego de 5 segundos
+    setTimeout(() => {
+      window.location.href = "index.html"; // Cambia a tu archivo principal si tiene otro nombre
+    }, 5000);
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainBank</title>
+  <style>
+  
     :root {
       --verde-principal: #28C76F;
       --turquesa: #00CFE8;
